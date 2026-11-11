@@ -1,0 +1,232 @@
+/* ElectroMart CCC app. Plain CSS, no frameworks.
+   Built to read well at 375px wide with no sideways scrolling. */
+
+:root {
+  --ink: #16202c;
+  --muted: #5a6879;
+  --line: #d8dee7;
+  --panel: #ffffff;
+  --page: #f4f6f9;
+  --accent: #0b5d8a;
+  --good: #1f6f43;
+  --bad: #9b2226;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 0 16px 48px;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+header {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 24px 0 8px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+main {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 28px 0 8px;
+}
+
+.status {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--muted);
+}
+
+.status.error {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin: 8px 0 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+caption { text-align: left; }
+
+th, td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  font-size: 0.88rem;
+}
+
+th:first-child, td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+thead th {
+  background: #eef2f7;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+
+tr.total td {
+  font-weight: 700;
+  background: #f8fafc;
+}
+
+td.up { color: var(--bad); }
+td.down { color: var(--good); }
+
+.item-note {
+  display: block;
+  font-weight: 400;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+/* ---- the lever panel ---- */
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.buttons button {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.buttons button:hover { background: #eaf3f9; }
+.buttons button:active { background: #d9e9f3; }
+
+.levers {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 14px 14px;
+  margin-bottom: 14px;
+}
+
+.lever { padding: 10px 0 2px; }
+.lever + .lever { border-top: 1px solid var(--line); }
+
+.lever-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.lever-head label {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.lever-head output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.lever input[type="range"] {
+  width: 100%;
+  margin: 8px 0 0;
+  accent-color: var(--accent);
+}
+
+.lever .formula {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.ccc-live {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: #eaf3f9;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+#lever-extras { margin-top: 14px; }
+
+ul#assumptions-list {
+  margin: 0;
+  padding: 12px 14px 12px 30px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+ul#assumptions-list li { margin: 2px 0; }
+
+footer {
+  max-width: 820px;
+  margin: 32px auto 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+code {
+  font-size: 0.9em;
+  background: #e8edf3;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+@media (min-width: 560px) {
+  th, td { padding: 10px 12px; font-size: 0.95rem; }
+  h1 { font-size: 2rem; }
+}

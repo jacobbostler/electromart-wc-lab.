@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ElectroMart Cash Conversion Cycle</title>
+  <meta name="description" content="Working capital levers and the cash conversion cycle for the ElectroMart case (FIN 4150).">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Progressive web app: the manifest tells the browser how to install it. -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b5d8a">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ElectroMart CCC">
+</head>
+<body>
+  <header>
+    <h1>ElectroMart</h1>
+    <p class="subtitle">Cash conversion cycle, before and after the working capital changes</p>
+  </header>
+
+  <main>
+    <p id="status" class="status">Loading the statements from data/&hellip;</p>
+
+    <section id="results" hidden>
+      <h2>Days</h2>
+      <table id="days-table">
+        <thead>
+          <tr>
+            <th scope="col">Measure</th>
+            <th scope="col">Before</th>
+            <th scope="col">After</th>
+            <th scope="col">Change</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="note" id="days-note"></p>
+
+      <h2>Cash freed</h2>
+      <p class="note">
+        A drop in an asset frees cash, and a rise in accounts payable frees cash.
+        The last column works the same figure out from the days instead of the
+        balances, as a check.
+      </p>
+      <table id="cash-table">
+        <thead>
+          <tr>
+            <th scope="col">Lever</th>
+            <th scope="col">Balance change</th>
+            <th scope="col">Cash freed</th>
+            <th scope="col">From days</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h2>Where the cash went</h2>
+      <table id="uses-table">
+        <tbody></tbody>
+      </table>
+
+      <h2>Move the levers</h2>
+      <p class="note">
+        Revenue and COGS stay at their Before values, so a change in days is a
+        working capital choice and nothing else. Everything below compares with
+        the Before balance sheet.
+      </p>
+
+      <div class="buttons">
+        <button type="button" id="set-before">Set to Before</button>
+        <button type="button" id="set-after">Set to After</button>
+      </div>
+
+      <div class="levers" id="levers"></div>
+
+      <p class="ccc-live" id="ccc-live"></p>
+
+      <table id="lever-table">
+        <thead>
+          <tr>
+            <th scope="col">Lever</th>
+            <th scope="col">Balance</th>
+            <th scope="col">Before</th>
+            <th scope="col">Cash freed</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <table id="lever-extras">
+        <tbody></tbody>
+      </table>
+
+      <h2>Assumptions</h2>
+      <ul id="assumptions-list"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>FIN 4150 &middot; Chapter 14: Working Capital Policy. Every figure is read
+      from the CSV files in <code>data/</code>; nothing leaves your device.</p>
+  </footer>
+
+  <script src="ccc.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
