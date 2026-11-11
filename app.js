@@ -358,4 +358,18 @@ function start() {
   });
 }
 
+/* Register the service worker, which is what makes the app installable and
+ * able to run offline. The relative path matters: the app is served from
+ * https://<username>.github.io/<repository>/, not from the root of a domain.
+ * Nothing here is required for the numbers to work, so a failure is only
+ * logged. Opening index.html straight off the disk has no service worker,
+ * because browsers only allow them over http(s). */
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function (error) {
+    console.log('Service worker not registered:', error.message);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', start);
+window.addEventListener('load', registerServiceWorker);
