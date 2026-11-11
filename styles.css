@@ -121,6 +121,86 @@ td.down { color: var(--good); }
   color: var(--muted);
 }
 
+/* ---- the lever panel ---- */
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.buttons button {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.buttons button:hover { background: #eaf3f9; }
+.buttons button:active { background: #d9e9f3; }
+
+.levers {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 14px 14px;
+  margin-bottom: 14px;
+}
+
+.lever { padding: 10px 0 2px; }
+.lever + .lever { border-top: 1px solid var(--line); }
+
+.lever-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.lever-head label {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.lever-head output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.lever input[type="range"] {
+  width: 100%;
+  margin: 8px 0 0;
+  accent-color: var(--accent);
+}
+
+.lever .formula {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.ccc-live {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: #eaf3f9;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+#lever-extras { margin-top: 14px; }
+
 ul#assumptions-list {
   margin: 0;
   padding: 12px 14px 12px 30px;

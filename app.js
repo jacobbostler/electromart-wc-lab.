@@ -153,6 +153,157 @@ function renderUses(before, after) {
   }
 }
 
+/* ---------- the lever panel ---------- */
+
+/* step="any" keeps the exact value we set, so Set to Before and Set to After
+ * show the same days as the table above instead of snapping to whole days. */
+var LEVERS = [
+  { key: 'dio', label: 'Days inventory outstanding (DIO)', max: 120, formula: 'Inventory = DIO x COGS / 365' },
+  { key: 'dso', label: 'Days sales outstanding (DSO)', max: 90, formula: 'Receivables = DSO x revenue / 365' },
+  { key: 'dpo', label: 'Days payable outstanding (DPO)', max: 120, formula: 'Payables = DPO x COGS / 365' }
+];
+
+var sliders = {};
+
+function buildLevers(onChange) {
+  var host = document.getElementById('levers');
+  host.textContent = '';
+
+  LEVERS.forEach(function (lever) {
+    var wrap = document.createElement('div');
+    wrap.className = 'lever';
+
+    var head = document.createElement('div');
+    head.className = 'lever-head';
+
+    var label = document.createElement('label');
+    label.setAttribute('for', lever.key + '-slider');
+    label.textContent = lever.label;
+
+    var out = document.createElement('output');
+    out.id = lever.key + '-value';
+
+    head.appendChild(label);
+    head.appendChild(out);
+
+    var input = document.createElement('input');
+    input.type = 'range';
+    input.id = lever.key + '-slider';
+    input.min = '0';
+    input.max = String(lever.max);
+    input.step = 'any';
+    input.addEventListener('input', onChange);
+
+    var formula = document.createElement('span');
+    formula.className = 'formula';
+    formula.textContent = lever.formula;
+
+    wrap.appendChild(head);
+    wrap.appendChild(input);
+    wrap.appendChild(formula);
+    host.appendChild(wrap);
+
+    sliders[lever.key] = { input: input, output: out };
+  });
+}
+
+function readSliders() {
+  return {
+    dio: Number(sliders.dio.input.value),
+    dso: Number(sliders.dso.input.value),
+    dpo: Number(sliders.dpo.input.value)
+  };
+}
+
+function writeSliders(days) {
+  sliders.dio.input.value = days.dio;
+  sliders.dso.input.value = days.dso;
+  sliders.dpo.input.value = days.dpo;
+}
+
+function renderLevers(before, assumptions) {
+  var days = readSliders();
+  var s = C.leverSummary(days, before, assumptions);
+  var beforeDays = C.periodMetrics(before, assumptions);
+
+  LEVERS.forEach(function (lever) {
+    sliders[lever.key].output.textContent = C.formatDays(days[lever.key]) + ' days';
+  });
+
+  /* 1. the new cash conversion cycle */
+  var vsBefore = s.days.ccc - beforeDays.ccc;
+  document.getElementById('ccc-live').textContent =
+    'Cash conversion cycle: ' + C.formatDays(s.days.ccc) + ' days  (' +
+    C.formatDays(s.days.dio) + ' + ' + C.formatDays(s.days.dso) + ' − ' +
+    C.formatDays(s.days.dpo) + ')  ·  ' +
+    (Math.abs(vsBefore) < 0.005
+      ? 'the same as Before'
+      : C.formatDays(Math.abs(vsBefore)) + ' days ' +
+        (vsBefore < 0 ? 'shorter' : 'longer') + ' than Before');
+
+  /* 2. the balances those days imply, and 3. the cash freed */
+  var rows = [
+    ['Inventory', s.balances.inventory, before.inventory, s.freed.inventory],
+    ['Receivables', s.balances.receivables, before.accounts_receivable, s.freed.receivables],
+    ['Payables', s.balances.payables, before.accounts_payable, s.freed.payables]
+  ];
+
+  var body = document.querySelector('#lever-table tbody');
+  body.textContent = '';
+  rows.forEach(function (r) {
+    body.appendChild(row([
+      headCell(r[0]),
+      cell(C.formatDollars(r[1])),
+      cell(C.formatDollars(r[2])),
+      cell(C.formatDollars(r[3]), r[3] >= 0 ? 'down' : 'up')
+    ]));
+  });
+  var total = row([
+    headCell('Total cash freed'),
+    cell(''),
+    cell(''),
+    cell(C.formatDollars(s.freed.total), s.freed.total >= 0 ? 'down' : 'up')
+  ]);
+  total.className = 'total';
+  body.appendChild(total);
+
+  /* 4. interest saved, and 5. the supplier terms */
+  var extras = document.querySelector('#lever-extras tbody');
+  extras.textContent = '';
+
+  extras.appendChild(row([
+    headCell('Interest saved each year',
+      'Assumes every freed dollar pays down the bank line, capped at its Before balance of ' +
+      C.formatDollars(before.notes_payable) + ' at ' + C.formatPercent(assumptions.bank_rate) +
+      '. The case’s own balance sheet shows part of the cash was kept instead.'),
+    cell(C.formatDollars(s.interestSaved), s.interestSaved >= 0 ? 'down' : 'up')
+  ]));
+
+  extras.appendChild(row([
+    headCell('Days paid past the due date',
+      'DPO − net ' + assumptions.net_days + ', never below zero'),
+    cell(C.formatDays(s.daysPastDue) + ' days')
+  ]));
+
+  if (s.discount.takesDiscount) {
+    extras.appendChild(row([
+      headCell('Supplier discount',
+        'Paying within ' + assumptions.discount_days + ' days earns the ' +
+        C.formatPercent(assumptions.supplier_discount) + ' discount'),
+      cell('Taken')
+    ]));
+  } else {
+    extras.appendChild(row([
+      headCell('Annual cost of skipping the discount',
+        C.formatPercent(assumptions.supplier_discount) + ' / (1 − ' +
+        C.formatPercent(assumptions.supplier_discount) + ') × ' +
+        assumptions.days_in_year + ' / (' + C.formatDays(s.days.dpo) + ' − ' +
+        assumptions.discount_days + ')'),
+      cell(C.formatPercent(s.discount.costOfSkipping), 'up')
+    ]));
+  }
+}
+
 function renderAssumptions(assumptions) {
   var list = document.getElementById('assumptions-list');
   list.textContent = '';
@@ -182,6 +333,23 @@ function start() {
     renderCash(statements.before, statements.after, assumptions);
     renderUses(statements.before, statements.after);
     renderAssumptions(assumptions);
+
+    var beforeDays = C.periodMetrics(statements.before, assumptions);
+    var afterDays = C.periodMetrics(statements.after, assumptions);
+    var update = function () { renderLevers(statements.before, assumptions); };
+
+    buildLevers(update);
+    document.getElementById('set-before').addEventListener('click', function () {
+      writeSliders(beforeDays);
+      update();
+    });
+    document.getElementById('set-after').addEventListener('click', function () {
+      writeSliders(afterDays);
+      update();
+    });
+
+    writeSliders(beforeDays);
+    update();
 
     document.getElementById('status').hidden = true;
     document.getElementById('results').hidden = false;

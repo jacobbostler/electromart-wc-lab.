@@ -166,6 +166,93 @@ function cashFreedFromDays(before, after, assumptions) {
   };
 }
 
+/* ---------- the levers ---------- */
+
+/* The balance a number of days implies, at a given yearly flow.
+ * This is cashFromDays() read the other way round. */
+function balanceFromDays(days, annualFlow, daysInYear) {
+  return (days * annualFlow) / daysInYear;
+}
+
+/* The three balances a set of days implies. Revenue and COGS are held at
+ * their Before values, because a lever is a working capital choice: it does
+ * not change what ElectroMart sells or what its goods cost. */
+function impliedBalances(days, before, assumptions) {
+  var d = assumptions.days_in_year;
+  return {
+    inventory: balanceFromDays(days.dio, before.cogs, d),
+    receivables: balanceFromDays(days.dso, before.revenue, d),
+    payables: balanceFromDays(days.dpo, before.cogs, d)
+  };
+}
+
+/* Cash freed by the levers, measured against the Before balance sheet.
+ * Assets falling frees cash; payables rising frees cash. A negative number
+ * means ElectroMart ties up more cash than it did before. */
+function cashFreedByLevers(days, before, assumptions) {
+  var balances = impliedBalances(days, before, assumptions);
+  var inventory = before.inventory - balances.inventory;
+  var receivables = before.accounts_receivable - balances.receivables;
+  var payables = balances.payables - before.accounts_payable;
+  return {
+    balances: balances,
+    inventory: inventory,
+    receivables: receivables,
+    payables: payables,
+    total: inventory + receivables + payables
+  };
+}
+
+/* Interest saved in a year if every freed dollar pays down the bank line.
+ * Only the line's Before balance can be paid off, so the saving is capped
+ * there. If cash freed is negative ElectroMart has to borrow more, and the
+ * extra interest comes back as a negative saving. */
+function interestSaved(cashFreedTotal, bankLineBefore, bankRate) {
+  return Math.min(cashFreedTotal, bankLineBefore) * bankRate;
+}
+
+/* Days ElectroMart pays past the net-30 due date. Never below zero: paying
+ * early is not negative lateness. */
+function daysPastDue(dpoDays, netDays) {
+  return Math.max(0, dpoDays - netDays);
+}
+
+/* Does ElectroMart take the 2/10 discount, and if not, what does skipping it
+ * cost on a nominal annual basis?
+ *
+ *   cost = d / (1 - d) x 365 / (days paid - discount days)
+ *
+ * Paying within the discount period means taking the discount, so there is
+ * no cost of skipping to report. */
+function discountDecision(dpoDays, assumptions) {
+  var rate = assumptions.supplier_discount;
+  var discountDays = assumptions.discount_days;
+  if (dpoDays <= discountDays) {
+    return { takesDiscount: true, costOfSkipping: null };
+  }
+  var cost = (rate / (1 - rate)) *
+             (assumptions.days_in_year / (dpoDays - discountDays));
+  return { takesDiscount: false, costOfSkipping: cost };
+}
+
+/* Everything the lever panel needs, for one set of slider positions. */
+function leverSummary(days, before, assumptions) {
+  var freed = cashFreedByLevers(days, before, assumptions);
+  return {
+    days: {
+      dio: days.dio,
+      dso: days.dso,
+      dpo: days.dpo,
+      ccc: cashConversionCycle(days.dio, days.dso, days.dpo)
+    },
+    balances: freed.balances,
+    freed: freed,
+    interestSaved: interestSaved(freed.total, before.notes_payable, assumptions.bank_rate),
+    daysPastDue: daysPastDue(days.dpo, assumptions.net_days),
+    discount: discountDecision(days.dpo, assumptions)
+  };
+}
+
 /* ---------- formatting ---------- */
 
 function formatDays(value) {
@@ -197,6 +284,13 @@ var api = {
   cashFromDays: cashFromDays,
   cashFreed: cashFreed,
   cashFreedFromDays: cashFreedFromDays,
+  balanceFromDays: balanceFromDays,
+  impliedBalances: impliedBalances,
+  cashFreedByLevers: cashFreedByLevers,
+  interestSaved: interestSaved,
+  daysPastDue: daysPastDue,
+  discountDecision: discountDecision,
+  leverSummary: leverSummary,
   formatDays: formatDays,
   formatDollars: formatDollars,
   formatPercent: formatPercent
